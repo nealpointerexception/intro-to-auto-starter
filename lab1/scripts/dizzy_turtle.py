@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 import rospy
+import random
 from math import atan2, cos, pi, sin, sqrt
 # remember the Twist message from the prelab?
 # here we import it from geometry_msgs to gain
@@ -7,8 +8,8 @@ from math import atan2, cos, pi, sin, sqrt
 from geometry_msgs.msg import Twist
 
 '''TODO: SET FORMULA CONSTANTS HERE'''
-ANGULAR_Z = 0
-V = 0
+ANGULAR_Z = random.randint(0, 10)
+V = random.randint(0, 10)
 
 # Define the DizzyTurtle class
 class DizzyTurtle():
@@ -33,7 +34,11 @@ class DizzyTurtle():
         # We add _pub to our variables to indicate they are Publishers
         self.cmd_vel_pub = rospy.Publisher("/turtle1/cmd_vel", Twist, queue_size=10)
 
+        print('starting node')
+
 	'''TODO: CREATE INSTANCE OF TWIST MESSAGE TYPE'''
+        my_twist = Twist()
+
   
 
         # we define a rate to recieve messages at per second. In other words,
@@ -43,14 +48,25 @@ class DizzyTurtle():
         rospy.loginfo('Set Rate to 10hz')
 
 	'''TODO: RECORD THE START TIME HERE FOR ELAPSED CALCULATION'''
+        startTime = rospy.get_time()
 
         # We can run the main loop of the Node while we don't get a Ctrl+C input
         while not rospy.is_shutdown():
-	    '''TODO: CALCULATE V_X and V_Y WITH SPIRAL FORMULA'''
+
+            curr_time = rospy.get_time() - startTime
+
+	        #'''TODO: CALCULATE V_X and V_Y WITH SPIRAL FORMULA'''
+            V_X = V * cos (ANGULAR_Z * curr_time) - ANGULAR_Z * V * curr_time * sin(ANGULAR_Z * curr_time)
+            V_Y = V * sin (ANGULAR_Z * curr_time) + ANGULAR_Z * V * curr_time * cos(ANGULAR_Z * curr_time)
 
             '''TODO: ASSIGN VALUES TO TWIST'''
+            my_twist.linear.x = V_X
+            my_twist.linear.y = V_Y
+            my_twist.angular.z = ANGULAR_Z
             
             '''TODO: PUBLISH TWIST MESSAGE TO CMD_VEL WITH PUBLISHER HANDLE'''
+            self.cmd_vel_pub.publish(my_twist)
+            
             
             # sleep for 10Hz (0.1s) and loop again
             rate.sleep() 
